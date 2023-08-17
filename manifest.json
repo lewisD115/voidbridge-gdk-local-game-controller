@@ -1,0 +1,31 @@
+{
+	"name": "GDK Local Game Controller",
+	"version": "0.1.0",
+	"description": "Ignore/acknowledge gameConfigContentRoot value with a click! Use the shortkey Command+K/Ctr+k to show the controller.",
+	"permissions": ["tabs"],
+	"host_permissions": ["https://*.voidbridge.net/play/portals/*"],
+	"content_scripts": [
+		{
+			"matches": ["https://*.voidbridge.net/play/portals/*"],
+			"js": ["contentScript.js"]	
+		}
+	],
+	"action": {
+		"default_icon": {
+			"16": "assets/voidbridgeLogo.png",
+			"24": "assets/voidbridgeLogo.png",
+			"32": "assets/voidbridgeLogo.png"
+		},
+		"default_popup": "popup.html"
+	},
+	"commands": {
+		"_execute_action": {
+			"suggested_key": {
+				"default": "Ctrl+K",
+				"mac": "Command+K"
+			}
+		}
+	},
+    "manifest_version": 3
+
+}
