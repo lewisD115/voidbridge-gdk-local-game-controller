@@ -6,7 +6,7 @@ const toggleElement = document.getElementById("gameConfigToggle");
 const activeTab = await getActiveTab();
 
 
-if(activeTab.url.includes("voidbridge.net/play/portals/")) {
+if(activeTab.url.includes("vbgames88.com/play/portals/")) {
 
 }
 else {

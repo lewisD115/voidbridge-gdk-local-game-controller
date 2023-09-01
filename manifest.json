@@ -3,10 +3,10 @@
 	"version": "0.1.0",
 	"description": "Ignore/acknowledge gameConfigContentRoot value with a click! Use the shortkey Command+K/Ctr+k to show the controller.",
 	"permissions": ["tabs"],
-	"host_permissions": ["https://*.voidbridge.net/play/portals/*"],
+	"host_permissions": ["https://*.vbgames88.com/play/portals/*"],
 	"content_scripts": [
 		{
-			"matches": ["https://*.voidbridge.net/play/portals/*"],
+			"matches": ["https://*.vbgames88.com/play/portals/*"],
 			"js": ["contentScript.js"]	
 		}
 	],
