@@ -10,8 +10,7 @@ if(activeTab.url.includes("vbgames88.com/play/portals/")) {
 
 }
 else {
-	document.body.innerHTML = '';
-	document.documentElement.innerHTML = '';
+	window.close();
 }
 
 
