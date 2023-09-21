@@ -1,7 +1,9 @@
-import {GAME_CONFIG_CONTENT_ROOT, GAME_CLIENT_CONTENT_ROOT, CONFIG_INTERACTION} from './utils/globalStrings.js';
+import {GAME_CONFIG_CONTENT_ROOT, GAME_CLIENT_CONTENT_ROOT, CLIENT_MODE, 
+	CONFIG_INTERACTION, DESKTOP_HTML, MOBILE_HTML} from './utils/globalStrings.js';
 
 
-const toggleElement = document.getElementById("gameConfigToggle");
+const toggleConfigElement = document.getElementById("gameConfigToggle");
+const toggleClientElement = document.getElementById("mobileClientToggle");
 
 const activeTab = await getActiveTab();
 
@@ -22,12 +24,28 @@ const urlParameters = new URLSearchParams(queryParameters);
 
 
 if(urlParameters.get(GAME_CONFIG_CONTENT_ROOT) != null) {
-	toggleElement.checked = true;
+	toggleConfigElement.checked = true;
 } else {
-	toggleElement.checked = false;
+	toggleConfigElement.checked = false;
 }
 
-toggleElement.addEventListener('change', myFunction);
+
+const currentClientMode = urlParameters.get(CLIENT_MODE);
+
+if(currentClientMode != null) {
+
+	if(currentClientMode == DESKTOP_HTML)
+	{
+		toggleClientElement.checked = false;
+	}
+	else if (currentClientMode == MOBILE_HTML)
+	{
+		toggleClientElement.checked = true;
+	}
+}
+
+toggleConfigElement.addEventListener('change', toggleConfig);
+toggleClientElement.addEventListener('change', toggleClient);
 
 
 async function getActiveTab() {
@@ -41,7 +59,8 @@ function getUrlParams() {
 	return params;
 }
 
-async function myFunction(event) {
+//Toggle to use the local game client
+async function toggleConfig(event) {
 	const activeTab = await getActiveTab();
 
 	if (!event.target.checked) {
@@ -52,6 +71,24 @@ async function myFunction(event) {
 		const newParamValue = urlParameters.get(GAME_CLIENT_CONTENT_ROOT);
 		urlParameters.set(GAME_CONFIG_CONTENT_ROOT, newParamValue);
 	}
+
+	chrome.tabs.sendMessage(activeTab.id, {
+		type: CONFIG_INTERACTION,
+		urlParameters: urlParameters.toString()
+	});
+}
+
+//Toggle the client between desktop and mobile
+async function toggleClient(event) {
+	const activeTab = await getActiveTab();
+
+	let clientParamValue = DESKTOP_HTML;
+
+	if (event.target.checked) {
+		clientParamValue = MOBILE_HTML
+	}
+
+	urlParameters.set(CLIENT_MODE, clientParamValue);
 
 	chrome.tabs.sendMessage(activeTab.id, {
 		type: CONFIG_INTERACTION,
