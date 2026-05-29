@@ -1,8 +1,8 @@
 {
 	"name": "GDK Local Game Controller",
 	"version": "0.1.0",
-	"description": "Ignore/acknowledge gameConfigContentRoot value or switch device client with a click! Use the shortkey Command+K/Ctr+k to show the controller.",
-	"permissions": ["tabs"],
+	"description": "Ignore/acknowledge gameConfigContentRoot value or switch device client with a click! Use the shortkey Command+Shift+K/Ctr+Shift+k to show the controller.",
+	"permissions": ["tabs", "storage"],
 	"host_permissions": ["https://*.vbgames88.com/play/portals/*"],
 	"content_scripts": [
 		{
@@ -21,11 +21,17 @@
 	"commands": {
 		"_execute_action": {
 			"suggested_key": {
-				"default": "Ctrl+K",
-				"mac": "Command+K"
+				"default": "Ctrl+Shift+K",
+				"mac": "Command+Shift+K"
 			}
 		}
 	},
-    "manifest_version": 3
+    "manifest_version": 3,
+    "web_accessible_resources": [
+	    {
+	        "resources": ["inject.js"],
+	        "matches": ["https://*.vbgames88.com/*"]
+	    }
+	]
 
 }

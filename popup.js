@@ -15,7 +15,6 @@ else {
 	window.close();
 }
 
-
 //check if url is voidbridge
 
 const queryParameters =  getUrlParams();
@@ -95,3 +94,48 @@ async function toggleClient(event) {
 		urlParameters: urlParameters.toString()
 	});
 }
+
+document
+    .getElementById("openSimulation")
+    .addEventListener("click", async () => {
+
+    	// Open simulation button had been clicked on popup	
+		const allData = await chrome.storage.local.get(null);
+
+        const data = await chrome.storage.local.get([
+            "vbUserId",
+            "vbPortalSessionId"
+        ]);
+
+
+        const userId = data.vbUserId;
+        const portalSessionId = data.vbPortalSessionId;
+
+
+        if (!userId || !portalSessionId) {
+            alert("Could not find session data.");
+            return;
+        }
+
+		// Open tab so that developer can set simulations for the exact portal session that's open
+        const url =
+            `https://vb-nightly.vbgames88.com/admin/#/users/${userId}/portal-sessions/${portalSessionId}/set-simulation`;
+
+        chrome.tabs.create({ url });
+    });	
+
+async function refreshValues() {
+
+    const data = await chrome.storage.local.get([
+        "vbUserId",
+        "vbPortalSessionId"
+    ]);
+
+    document.getElementById("userId").textContent =
+        data.vbUserId ?? "-";
+
+    document.getElementById("sessionId").textContent =
+        data.vbPortalSessionId ?? "-";
+}
+
+refreshValues();
