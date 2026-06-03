@@ -1,4 +1,3 @@
-
 //
 // FETCH
 //
@@ -28,26 +27,46 @@ XMLHttpRequest.prototype.send = function(body) {
 
         try {
             // Find /enter file to get data to be used to open simulation webpage
-            if (this._url && this._url.includes("play/api/portals") && this._url.includes("enter")) {
+            if (this._url && this._url.includes("play/api/portals")) {
+                if (this._url.includes("enter")) {
 
-                const doc = this.response;
+                    const doc = this.response;
 
-                const enterResponse =
-                    doc.querySelector("EnterPortalResponse");
+                    const enterResponse =
+                        doc.querySelector("EnterPortalResponse");
 
-                if (enterResponse) {
+                    if (enterResponse) {
 
-                    const userId =
-                        enterResponse.getAttribute("userId");
+                        const userId =
+                            enterResponse.getAttribute("userId");
 
-                    const portalSessionId =
-                        enterResponse.getAttribute("sessionId");
+                        const portalSessionId =
+                            enterResponse.getAttribute("sessionId");
+
+
+                        window.postMessage({
+                            type: "VB_SIM_DATA",
+                            userId,
+                            portalSessionId
+                        });
+                    }
+                } else if (this._url.includes("init")) {
+                    const doc = this.response;
+                    // Get all symbols within init
+                    const symbols = getSortedSymbols(doc);
 
 
                     window.postMessage({
-                        type: "VB_SIM_DATA",
-                        userId,
-                        portalSessionId
+                        type: "VB_SYMBOLS",
+                        symbols
+                    });
+
+                    // Get line number data within init
+                    const lineNumbers = getLineData(doc);
+
+                    window.postMessage({
+                        type: "VB_LINE_NUMBERS",
+                        lineNumbers
                     });
                 }
             }
@@ -59,3 +78,131 @@ XMLHttpRequest.prototype.send = function(body) {
 
     return originalSend.call(this, body);
 };
+
+//
+// Helpers
+//
+
+// Special symbols should be listed after normal symbols
+function getPriority(symbol) {
+    const lower = symbol.toLowerCase();
+
+    if (lower === "scatter") {
+        return 2; // always last
+    }
+
+    if (lower === "wild") {
+        return 1; // before scatter
+    }
+
+    return 0; // normal symbols
+}
+
+// Get a list of symbols within a game
+function getSortedSymbols(doc) {
+    const symbolToLowestMultiplier = new Map();
+
+    for (const payout of doc.querySelectorAll("payout")) {
+        let symbol = payout.getAttribute("symbol");
+
+        if (!symbol) {
+            continue;
+        }
+
+        symbol = symbol.replace(/^@/, "");
+
+        const multiplier = Number(
+            payout.querySelector("award")?.getAttribute("multiplier")
+        );
+
+        const currentLowest =
+            symbolToLowestMultiplier.get(symbol);
+
+        if (
+            currentLowest === undefined ||
+            multiplier < currentLowest
+        ) {
+            symbolToLowestMultiplier.set(
+                symbol,
+                multiplier
+            );
+        }
+    }
+
+    return [...symbolToLowestMultiplier.entries()]
+        .sort((a, b) => {
+            const priorityDiff =
+                getPriority(a[0]) - getPriority(b[0]);
+
+            if (priorityDiff !== 0) {
+                return priorityDiff;
+            }
+
+            return a[1] - b[1];
+        })
+        .map(([symbol]) => symbol);
+}
+
+function getBetMappings(doc) {
+    const groups = new Map();
+
+    for (const mapping of doc.querySelectorAll(
+        'gridMapping[id="betLines"] betMapping'
+    )) {
+        const betId = mapping.getAttribute("betId");
+        const gridMappingId =
+            mapping.getAttribute("gridMappingId");
+
+        if (!betId || !gridMappingId) {
+            continue;
+        }
+
+        if (!groups.has(gridMappingId)) {
+            groups.set(gridMappingId, []);
+        }
+
+        groups.get(gridMappingId).push(betId);
+    }
+
+    return groups;
+}
+
+function getLineData(doc) {
+    const groups = getBetMappings(doc);
+
+    const lineNumbers = [];
+    const payoutIdGroup = [];
+
+    for (const [gridMappingId, betIds] of groups) {
+
+        const number =
+            Number(gridMappingId.match(/(\d+)$/)?.[1]);
+
+        if (betIds.length === 1) {
+
+            lineNumbers.push({
+                id: betIds[0],
+                number
+            });
+
+        } else {
+
+            lineNumbers.push({
+                id: gridMappingId,
+                number
+            });
+
+            for (const betId of betIds) {
+                payoutIdGroup.push({
+                    betId,
+                    groupBetId: gridMappingId
+                });
+            }
+        }
+    }
+
+    return {
+        lineNumbers,
+        payoutIdGroup
+    };
+}

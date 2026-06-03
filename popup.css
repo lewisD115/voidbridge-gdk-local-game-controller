@@ -153,3 +153,16 @@ input:checked + .slider:before {
 .regButton:focus:not(:active) {
   box-shadow: rgba(40, 170, 255, 0.25) 0 0 0 .125em;
 }
+
+.copyDataContainer {
+  text-align: center;
+}
+
+.buttonDiv {
+  margin: 10px;
+}
+
+#status {
+  height: 12px;
+  text-align: center;
+}
